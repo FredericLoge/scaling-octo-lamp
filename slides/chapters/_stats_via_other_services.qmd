@@ -1,4 +1,5 @@
 # Analytics & analysis on cluster
 
-Todo: add database links
-
+db connection
+h2o
+spark

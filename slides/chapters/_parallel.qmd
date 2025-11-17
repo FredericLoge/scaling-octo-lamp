@@ -7,6 +7,9 @@ If you look for resources around parallel programming, you'll inevitably found t
 In all instances, the code looks somewhat (if not a little more complex) like the one we shall use from the `future` package:
 
 ```{r}
+library(future)
+library(doFuture)
+
 plan(multisession, workers=1) # of workers - to be changed
 system.time({
   x <- foreach(i = 1:4) %dofuture% {

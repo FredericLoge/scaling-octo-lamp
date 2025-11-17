@@ -420,28 +420,9 @@ Frédéric Logé
 <h2 id="toc-title">Table of contents</h2>
 <ul>
 <li><a href="#/introduction" id="/toc-introduction">Introduction</a></li>
-<li><a href="#/writing-efficient-code" id="/toc-writing-efficient-code">Writing efficient code</a>
-<ul>
-<li><a href="#/best-r-practice-recommendations" id="/toc-best-r-practice-recommendations">Best R practice recommendations</a></li>
-<li><a href="#/timing" id="/toc-timing">Timing</a></li>
-<li><a href="#/profiling-code" id="/toc-profiling-code">Profiling code</a></li>
-<li><a href="#/exercise-moving-average" id="/toc-exercise-moving-average">Exercise: Moving Average</a></li>
-<li><a href="#/solution" id="/toc-solution">Solution(?)</a></li>
-<li><a href="#/why-still-create-our-own-r-functions" id="/toc-why-still-create-our-own-r-functions">Why still create our own R functions ?</a></li>
-<li><a href="#/exercise-simulation-example" id="/toc-exercise-simulation-example">Exercise: Simulation Example</a></li>
-<li><a href="#/solution-to-step-1" id="/toc-solution-to-step-1">Solution to step 1</a></li>
-<li><a href="#/solution-to-step-2---plot" id="/toc-solution-to-step-2---plot">Solution to step 2 - plot</a></li>
-<li><a href="#/memory" id="/toc-memory">Memory</a></li>
-<li><a href="#/why-do-we-need-garbage-collection" id="/toc-why-do-we-need-garbage-collection">Why do we need garbage collection ?</a></li>
-<li><a href="#/exercise-order-of-magnitude" id="/toc-exercise-order-of-magnitude">Exercise: Order of Magnitude</a></li>
-<li><a href="#/solution-1" id="/toc-solution-1">Solution (?)</a></li>
-<li><a href="#/to-confuse-you" id="/toc-to-confuse-you">To confuse you:</a></li>
-<li><a href="#/take-home-exercises" id="/toc-take-home-exercises">Take-Home Exercises</a></li>
-</ul></li>
-<li><a href="#/analytics-analysis-locally" id="/toc-analytics-analysis-locally">Analytics &amp; analysis locally</a>
-<ul>
-<li><a href="#/data-wrangling" id="/toc-data-wrangling">Data Wrangling</a></li>
-</ul></li>
+<li><a href="#/writing-efficient-code" id="/toc-writing-efficient-code">Writing efficient code</a></li>
+<li><a href="#/parallel-treatment" id="/toc-parallel-treatment">Parallel treatment</a></li>
+<li><a href="#/analytics-analysis-part-1" id="/toc-analytics-analysis-part-1">Analytics &amp; analysis (part 1)</a></li>
 <li><a href="#/analytics-analysis-on-cluster" id="/toc-analytics-analysis-on-cluster">Analytics &amp; analysis on cluster</a></li>
 <li><a href="#/resources" id="/toc-resources">Resources</a></li>
 </ul>
@@ -487,7 +468,6 @@ Frédéric Logé
 <li><strong>Work on data samples</strong> e.g.&nbsp;active learning</li>
 <li>Breakdown tasks in your data science life cycle: <strong>you cannot do everything in R</strong>.</li>
 </ul>
-<!--- INTRODUCTION SECTION--->
 </section></section>
 <section>
 <section id="writing-efficient-code" class="title-slide slide level1 center">
@@ -511,17 +491,20 @@ Frédéric Logé
 <span id="cb1-2"><a href=""></a>foo <span class="ot">&lt;-</span> <span class="cf">function</span>(){ <span class="fu">return</span>(<span class="fu">sum</span>(<span class="dv">1</span><span class="sc">:</span><span class="fl">1e6</span>)) }</span>
 <span id="cb1-3"><a href=""></a></span>
 <span id="cb1-4"><a href=""></a><span class="co"># measure execution of the function, once</span></span>
-<span id="cb1-5"><a href=""></a><span class="fu">system.time</span>({ <span class="fu">foo</span>() })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href=""></a><span class="co"># user: actual CPU time for the process</span></span>
+<span id="cb1-6"><a href=""></a><span class="co"># system: any indirect operation due to the process: I/O of files, GC, memory allocation, ...</span></span>
+<span id="cb1-7"><a href=""></a><span class="co"># elapsed: total elapsed time</span></span>
+<span id="cb1-8"><a href=""></a><span class="fu">system.time</span>({ <span class="fu">foo</span>() })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   user  system elapsed 
-      0       0       0 </code></pre>
+  0.000   0.000   0.001 </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a><span class="co"># repeat 50 times the function to get some statistics</span></span>
 <span id="cb3-2"><a href=""></a>microbenchmark<span class="sc">::</span><span class="fu">microbenchmark</span>({ <span class="fu">foo</span>() }, <span class="at">times =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: nanoseconds
           expr min  lq     mean median  uq    max neval
- {     foo() } 164 164 12626.36    164 205 622052    50</code></pre>
+ {     foo() } 164 164 13479.98    205 205 663831    50</code></pre>
 </div>
 </div>
 </section>
@@ -539,8 +522,8 @@ Frédéric Logé
 <span id="cb5-8"><a href=""></a>  }</span>
 <span id="cb5-9"><a href=""></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="profvis html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-1081cc2ca7648b3fb6e2" style="width:100%;height:600px;"></div>
-<script type="application/json" data-for="htmlwidget-1081cc2ca7648b3fb6e2">{"x":{"message":{"prof":{"time":[1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,8,8,8,8,9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,11,12],"depth":[8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,9,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,9,8,7,6,5,4,3,2,1,1],"label":["r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","<GC>","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","<GC>","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","profvis::profvis"],"filenum":[1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null],"linenum":[7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,null],"memalloc":[16.50514984130859,16.50514984130859,16.50514984130859,16.50514984130859,16.50514984130859,16.50514984130859,16.50514984130859,16.50514984130859,11.55101776123047,11.55101776123047,11.55101776123047,11.55101776123047,11.55101776123047,11.55101776123047,11.55101776123047,11.55101776123047,19.63997650146484,19.63997650146484,19.63997650146484,19.63997650146484,19.63997650146484,19.63997650146484,19.63997650146484,19.63997650146484,16.02611541748047,16.02611541748047,16.02611541748047,16.02611541748047,16.02611541748047,16.02611541748047,16.02611541748047,16.02611541748047,12.27324676513672,12.27324676513672,12.27324676513672,12.27324676513672,12.27324676513672,12.27324676513672,12.27324676513672,12.27324676513672,20.73886108398438,20.73886108398438,20.73886108398438,20.73886108398438,20.73886108398438,20.73886108398438,20.73886108398438,20.73886108398438,19.46812438964844,19.46812438964844,19.46812438964844,19.46812438964844,19.46812438964844,19.46812438964844,19.46812438964844,19.46812438964844,23.39307403564453,23.39307403564453,23.39307403564453,23.39307403564453,23.39307403564453,23.39307403564453,23.39307403564453,23.39307403564453,23.39307403564453,26.42372131347656,26.42372131347656,26.42372131347656,26.42372131347656,26.42372131347656,26.42372131347656,26.42372131347656,26.42372131347656,23.36279296875,23.36279296875,23.36279296875,23.36279296875,23.36279296875,23.36279296875,23.36279296875,23.36279296875,31.90258026123047,31.90258026123047,31.90258026123047,31.90258026123047,31.90258026123047,31.90258026123047,31.90258026123047,31.90258026123047,31.90258026123047,32.34485626220703],"meminc":[0,0,0,0,0,0,0,0,-4.954132080078125,0,0,0,0,0,0,0,8.088958740234375,0,0,0,0,0,0,0,-3.613861083984375,0,0,0,0,0,0,0,-3.75286865234375,0,0,0,0,0,0,0,8.465614318847656,0,0,0,0,0,0,0,-1.270736694335938,0,0,0,0,0,0,0,3.924949645996094,0,0,0,0,0,0,0,0,3.030647277832031,0,0,0,0,0,0,0,-3.060928344726562,0,0,0,0,0,0,0,8.539787292480469,0,0,0,0,0,0,0,0,0.4422760009765625],"filename":["<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,null]},"interval":10,"files":[{"filename":"<expr>","content":"# note that in RStudio you can use the \"Profile\" menu identically\nprofvis::profvis({\n  r <- c()\n  s <- 0\n  for(i in 1:1e6){\n    s <- s + i\n    r[i] <- i\n  }\n})","normpath":"<expr>"}],"prof_output":"/var/folders/r7/mrxb337n7079g836qxx31tzh0000gn/T//RtmpeUhl4f/file4211147784c4.prof","highlight":{"output":["^output\\$"],"gc":["^<GC>$"],"stacktrace":["^\\.\\.stacktraceo(n|ff)\\.\\.$"]},"split":"h"}},"evals":[],"jsHooks":[]}</script>
+<div class="profvis html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8f9c3753d4fa776de971" style="width:100%;height:600px;"></div>
+<script type="application/json" data-for="htmlwidget-8f9c3753d4fa776de971">{"x":{"message":{"prof":{"time":[1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,7,8,8,8,8,8,8,8,8,9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,11,11,11,11,11,11,11,11,12,12,12,12,12,12,12,12,13,13,13,13,13,13,13,13],"depth":[8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,9,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1,8,7,6,5,4,3,2,1],"label":["r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","<GC>","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis","r[i] <- i","doTryCatch","tryCatchOne","tryCatchList","tryCatchList","tryCatch","with_profvis_handlers","profvis::profvis"],"filenum":[1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null],"linenum":[7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null,7,null,null,null,null,null,null,null],"memalloc":[15.83474731445312,15.83474731445312,15.83474731445312,15.83474731445312,15.83474731445312,15.83474731445312,15.83474731445312,15.83474731445312,10.21261596679688,10.21261596679688,10.21261596679688,10.21261596679688,10.21261596679688,10.21261596679688,10.21261596679688,10.21261596679688,17.58341217041016,17.58341217041016,17.58341217041016,17.58341217041016,17.58341217041016,17.58341217041016,17.58341217041016,17.58341217041016,13.21575164794922,13.21575164794922,13.21575164794922,13.21575164794922,13.21575164794922,13.21575164794922,13.21575164794922,13.21575164794922,22.31747436523438,22.31747436523438,22.31747436523438,22.31747436523438,22.31747436523438,22.31747436523438,22.31747436523438,22.31747436523438,16.26479339599609,16.26479339599609,16.26479339599609,16.26479339599609,16.26479339599609,16.26479339599609,16.26479339599609,16.26479339599609,25.1683349609375,25.1683349609375,25.1683349609375,25.1683349609375,25.1683349609375,25.1683349609375,25.1683349609375,25.1683349609375,25.1683349609375,19.85803985595703,19.85803985595703,19.85803985595703,19.85803985595703,19.85803985595703,19.85803985595703,19.85803985595703,19.85803985595703,19.55484008789062,19.55484008789062,19.55484008789062,19.55484008789062,19.55484008789062,19.55484008789062,19.55484008789062,19.55484008789062,26.59951782226562,26.59951782226562,26.59951782226562,26.59951782226562,26.59951782226562,26.59951782226562,26.59951782226562,26.59951782226562,23.66262054443359,23.66262054443359,23.66262054443359,23.66262054443359,23.66262054443359,23.66262054443359,23.66262054443359,23.66262054443359,31.80726623535156,31.80726623535156,31.80726623535156,31.80726623535156,31.80726623535156,31.80726623535156,31.80726623535156,31.80726623535156,31.96786499023438,31.96786499023438,31.96786499023438,31.96786499023438,31.96786499023438,31.96786499023438,31.96786499023438,31.96786499023438],"meminc":[0,0,0,0,0,0,0,0,-5.62213134765625,0,0,0,0,0,0,0,7.370796203613281,0,0,0,0,0,0,0,-4.367660522460938,0,0,0,0,0,0,0,9.101722717285156,0,0,0,0,0,0,0,-6.052680969238281,0,0,0,0,0,0,0,8.903541564941406,0,0,0,0,0,0,0,0,-5.310295104980469,0,0,0,0,0,0,0,-0.3031997680664062,0,0,0,0,0,0,0,7.044677734375,0,0,0,0,0,0,0,-2.936897277832031,0,0,0,0,0,0,0,8.144645690917969,0,0,0,0,0,0,0,0.1605987548828125,0,0,0,0,0,0,0],"filename":["<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null,"<expr>",null,null,null,null,null,null,null]},"interval":10,"files":[{"filename":"<expr>","content":"# note that in RStudio you can use the \"Profile\" menu identically\nprofvis::profvis({\n  r <- c()\n  s <- 0\n  for(i in 1:1e6){\n    s <- s + i\n    r[i] <- i\n  }\n})","normpath":"<expr>"}],"prof_output":"/var/folders/r7/mrxb337n7079g836qxx31tzh0000gn/T//RtmpzCTHsF/file68366e3b6daa.prof","highlight":{"output":["^output\\$"],"gc":["^<GC>$"],"stacktrace":["^\\.\\.stacktraceo(n|ff)\\.\\.$"]},"split":"h"}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
@@ -585,9 +568,9 @@ Frédéric Logé
 <span id="cb6-16"><a href=""></a>microbenchmark<span class="sc">::</span><span class="fu">microbenchmark</span>(<span class="fu">ma_0</span>(<span class="at">x=</span>x, <span class="at">n=</span>n), <span class="fu">ma_1</span>(<span class="at">x=</span>x, <span class="at">n=</span>n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: milliseconds
-               expr       min       lq     mean   median      uq      max neval
- ma_0(x = x, n = n) 63.976933 64.35469 65.75277 64.95776 66.2887 93.70628   100
- ma_1(x = x, n = n)  9.729751 11.56827 13.99411 12.60844 13.5113 39.59083   100</code></pre>
+               expr      min       lq     mean   median       uq      max neval
+ ma_0(x = x, n = n) 70.60356 74.18450 77.02036 75.49027 77.47805 119.4600   100
+ ma_1(x = x, n = n) 10.97320 13.21899 16.20814 14.16101 15.40983  45.8453   100</code></pre>
 </div>
 </div>
 <p><strong>Vector</strong> operations are a must-use resource of R.</p>
@@ -657,11 +640,11 @@ Frédéric Logé
 <div class="cell-output cell-output-stdout">
 <pre><code>Unit: milliseconds
                                                      expr       min        lq
-     run_iteration(n_iter = 1e+06, x = 0.5, lambda = 3.8) 16.536038 16.702170
- run_iteration_cpp(n_iter = 1e+06, x = 0.5, lambda = 3.8)  2.546387  2.553972
-      mean    median        uq      max neval
- 17.157029 17.115225 17.439555 18.32786   100
-  2.625907  2.570105  2.668649  3.07623   100</code></pre>
+     run_iteration(n_iter = 1e+06, x = 0.5, lambda = 3.8) 17.765874 19.007231
+ run_iteration_cpp(n_iter = 1e+06, x = 0.5, lambda = 3.8)  2.634496  2.856409
+      mean    median        uq       max neval
+ 19.441426 19.655154 19.833156 21.343288   100
+  2.994166  3.042877  3.066574  3.728909   100</code></pre>
 </div>
 </div>
 </section>
@@ -693,21 +676,21 @@ Frédéric Logé
 <span id="cb10-3"><a href=""></a></span>
 <span id="cb10-4"><a href=""></a><span class="fu">print</span>(lobstr<span class="sc">::</span><span class="fu">obj_addr</span>(a))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "0x139d911b8"</code></pre>
+<pre><code>[1] "0x115b9cbe8"</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href=""></a><span class="fu">print</span>(lobstr<span class="sc">::</span><span class="fu">obj_addr</span>(b))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "0x139d911b8"</code></pre>
+<pre><code>[1] "0x115b9cbe8"</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href=""></a>b[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
 <span id="cb14-2"><a href=""></a></span>
 <span id="cb14-3"><a href=""></a><span class="fu">print</span>(lobstr<span class="sc">::</span><span class="fu">obj_addr</span>(a))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "0x139d911b8"</code></pre>
+<pre><code>[1] "0x115b9cbe8"</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href=""></a><span class="fu">print</span>(lobstr<span class="sc">::</span><span class="fu">obj_addr</span>(b))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "0x138944ac8"</code></pre>
+<pre><code>[1] "0x114694ce8"</code></pre>
 </div>
 </div>
 </section>
@@ -723,7 +706,11 @@ Frédéric Logé
 <p><strong>Order of Magnitude</strong></p>
 </div>
 <div class="callout-content">
-<p>Generate random datasets: - vary the data types: numerical, boolean, categorical - vary the number of observations and columns</p>
+<p>Generate random datasets:</p>
+<ul>
+<li><p>vary the data types: numerical, boolean, categorical</p></li>
+<li><p>vary the number of observations and columns</p></li>
+</ul>
 <p>For each dataset generated, compute the object size and make a nice visualization from it</p>
 </div>
 </div>
@@ -769,7 +756,7 @@ Frédéric Logé
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href=""></a>toto[[<span class="dv">1</span>]][<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="dv">9</span></span>
 <span id="cb28-2"><a href=""></a><span class="fu">print</span>(lobstr<span class="sc">::</span><span class="fu">obj_size</span>(toto))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>95.66 MB</code></pre>
+<pre><code>95.65 MB</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href=""></a>banana <span class="ot">&lt;-</span> <span class="st">"bananas bananas bananas"</span></span>
 <span id="cb30-2"><a href=""></a><span class="fu">print</span>(lobstr<span class="sc">::</span><span class="fu">obj_size</span>(banana))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -789,11 +776,78 @@ Frédéric Logé
 <li><p>Investigate confusing memory examples in slide above</p></li>
 <li><p>Rcpp implementation of optimization function e.g.&nbsp;Decision Tree</p></li>
 </ul>
-<!--- CODING EFFICIENTLY IN R --->
 </section></section>
 <section>
-<section id="analytics-analysis-locally" class="title-slide slide level1 center">
-<h1>Analytics &amp; analysis locally</h1>
+<section id="parallel-treatment" class="title-slide slide level1 center">
+<h1>Parallel treatment</h1>
+
+</section>
+<section id="the-future-package" class="slide level2">
+<h2>The <code>future</code> package</h2>
+<p>If you look for resources around parallel programming, you’ll inevitably found the following names: <code>snow</code>, <code>parallel</code>, <code>foreach</code> and <code>future</code>. Those are not the only ones but clearly the most popular.</p>
+<p>In all instances, the code looks somewhat (if not a little more complex) like the one we shall use from the <code>future</code> package:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href=""></a><span class="fu">library</span>(future)</span>
+<span id="cb34-2"><a href=""></a><span class="fu">library</span>(doFuture)</span>
+<span id="cb34-3"><a href=""></a></span>
+<span id="cb34-4"><a href=""></a><span class="fu">plan</span>(multisession, <span class="at">workers=</span><span class="dv">1</span>) <span class="co"># of workers - to be changed</span></span>
+<span id="cb34-5"><a href=""></a><span class="fu">system.time</span>({</span>
+<span id="cb34-6"><a href=""></a>  x <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>) <span class="sc">%dofuture%</span> {</span>
+<span id="cb34-7"><a href=""></a>    <span class="fu">Sys.sleep</span>(<span class="dv">2</span>)</span>
+<span id="cb34-8"><a href=""></a>  }</span>
+<span id="cb34-9"><a href=""></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   user  system elapsed 
+  0.059   0.003   8.078 </code></pre>
+</div>
+</div>
+</section>
+<section id="all-for-one" class="slide level2">
+<h2>All for one ?</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href=""></a><span class="fu">plan</span>(multisession, <span class="at">workers=</span><span class="dv">4</span>)</span>
+<span id="cb36-2"><a href=""></a></span>
+<span id="cb36-3"><a href=""></a><span class="co"># choose a slow function</span></span>
+<span id="cb36-4"><a href=""></a>slow_fct <span class="ot">&lt;-</span> <span class="cf">function</span>(x){ <span class="fu">Sys.sleep</span>(<span class="fl">1e-5</span>) ; <span class="fu">log</span>(x) }</span>
+<span id="cb36-5"><a href=""></a></span>
+<span id="cb36-6"><a href=""></a><span class="co"># main vector</span></span>
+<span id="cb36-7"><a href=""></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span><span class="fl">1e5</span>)</span>
+<span id="cb36-8"><a href=""></a></span>
+<span id="cb36-9"><a href=""></a><span class="co"># iterate through the list</span></span>
+<span id="cb36-10"><a href=""></a><span class="fu">system.time</span>({</span>
+<span id="cb36-11"><a href=""></a>  iter <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(x)</span>
+<span id="cb36-12"><a href=""></a>  <span class="fu">foreach</span>(<span class="at">i=</span>iter, <span class="at">.combine=</span><span class="st">'c'</span>) <span class="sc">%dofuture%</span> {</span>
+<span id="cb36-13"><a href=""></a>    <span class="fu">slow_fct</span>(x[i])</span>
+<span id="cb36-14"><a href=""></a>  }</span>
+<span id="cb36-15"><a href=""></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   user  system elapsed 
+ 11.830   0.136  12.530 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href=""></a><span class="co"># iterate faster (especially in very large setting)</span></span>
+<span id="cb38-2"><a href=""></a><span class="fu">system.time</span>({</span>
+<span id="cb38-3"><a href=""></a>  iter <span class="ot">&lt;-</span> itertools<span class="sc">::</span><span class="fu">isplitIndices</span>(<span class="at">n=</span><span class="fu">length</span>(x), <span class="at">chunks=</span><span class="dv">4</span>)</span>
+<span id="cb38-4"><a href=""></a>  <span class="fu">foreach</span>(<span class="at">i=</span>iter, <span class="at">.combine=</span><span class="st">'c'</span>) <span class="sc">%dofuture%</span> {</span>
+<span id="cb38-5"><a href=""></a>    <span class="fu">slow_fct</span>(x[i])</span>
+<span id="cb38-6"><a href=""></a>  }</span>
+<span id="cb38-7"><a href=""></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   user  system elapsed 
+  0.052   0.006   0.087 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href=""></a><span class="co"># baseline</span></span>
+<span id="cb40-2"><a href=""></a><span class="fu">system.time</span>({</span>
+<span id="cb40-3"><a href=""></a>  <span class="fu">sapply</span>(<span class="at">X=</span><span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(x), <span class="at">FUN=</span><span class="cf">function</span>(i){ <span class="fu">slow_fct</span>(x[i]) })</span>
+<span id="cb40-4"><a href=""></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   user  system elapsed 
+  0.135   0.107   1.627 </code></pre>
+</div>
+</div>
+</section></section>
+<section>
+<section id="analytics-analysis-part-1" class="title-slide slide level1 center">
+<h1>Analytics &amp; analysis (part 1)</h1>
 
 </section>
 <section id="data-wrangling" class="slide level2 smaller">
@@ -824,12 +878,10 @@ Frédéric Logé
 </tr>
 </tbody>
 </table>
-<!--- DATA WRANGLING & STATISTICS in R --->
 </section></section>
 <section id="analytics-analysis-on-cluster" class="title-slide slide level1 center">
 <h1>Analytics &amp; analysis on cluster</h1>
-<p>Todo: add database links</p>
-<!--- DATA WRANGLING & STATISTICS via external services  --->
+<p>db connection h2o spark</p>
 </section>
 
 <section>
