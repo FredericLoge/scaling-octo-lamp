@@ -1,0 +1,10 @@
+# Analytics & analysis (part 1)
+
+## Data Wrangling {.smaller}
+
+| Recommended max data size | Package | 
+|---------- | -------------|
+| ~100K | **base R**  | 
+| ~1M  | **`readr`, `dplyr`** |
+| ~10M | **`data.table`** |
+| Inf  | **`arrow`, `duckdb`** |

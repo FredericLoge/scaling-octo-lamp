@@ -1,0 +1,35 @@
+---
+title: Scaling with ![](img/logo_R.png){width=150px}
+title-slide-attributes:
+    data-background-image: img/moucherotte.jpg
+    data-background-opacity: "0.5"
+date: 2025-10-17
+author:
+  - name: Frédéric Logé
+    email: frederic.logemunerel@gmail.com
+format: 
+  revealjs:
+    smaller: true
+    toc: true
+    toc-depth: 2
+    logo: img/logo-cepe.png
+    theme: [simple, styles.scss]
+execute:
+  echo: true
+editor: visual
+---
+
+
+{{< include chapters/_problem_statement.qmd >}}
+<!--- INTRODUCTION SECTION--->
+
+{{< include chapters/_efficiency.qmd >}}
+<!--- CODING EFFICIENTLY IN R --->
+
+{{< include chapters/_stats_in_R.qmd >}}
+<!--- DATA WRANGLING & STATISTICS in R --->
+
+{{< include chapters/_stats_via_other_services.qmd >}}
+<!--- DATA WRANGLING & STATISTICS via external services  --->
+
+{{< include chapters/_resources.qmd >}}

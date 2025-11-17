@@ -1,0 +1,26 @@
+# Resources
+
+## Resources {.smaller .unlisted}
+
+### Textbooks
+
+[Advanced R, 2nd Edition](https://adv-r.hadley.nz/index.html),
+[utilitR book](https://book.utilitr.org/),
+[Advanced R training](https://r-dev-perf.borishejblum.science/)
+
+### Benchmarks
+
+[Data Wrangling Benchmark 1](https://duckdblabs.github.io/db-benchmark/),
+[Data Wrangling Benchmark 2](https://ddotta.github.io/cookbook-rpolars/benchmarking.html)
+
+### Cheatsheets & documentation links
+
+[data.table](https://media.datacamp.com/legacy/image/upload/v1653830846/Marketing/Blog/data_table_cheat_sheet.pdf),
+[dtplyr](https://dtplyr.tidyverse.org/reference/index.html),
+[sparklyr](https://spark.posit.co/images/homepage/sparklyr.pdf)
+
+### Miscellaneous
+
+[SAS to R](https://aide-memoire-r-sas.netlify.app/)
+
+

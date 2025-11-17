@@ -1,0 +1,43 @@
+# Introduction
+
+## Data Science Lifecycle {.unlisted}
+
+![Data Science Life cycle, [source](https://unstop.com/blog/data-science-life-cycle)](img/data_science_life_cycle_v0.jpg)
+
+## What are we going to work on today ? {.unlisted}
+
+![Data Science Life cycle, [source](https://unstop.com/blog/data-science-life-cycle)](img/data_science_life_cycle_v1.jpg)
+
+## What are the tools involved ? {.unlisted}
+
+![Data Science Life cycle, [source](https://unstop.com/blog/data-science-life-cycle)](img/data_science_life_cycle_v2.jpg)
+
+## Common issues with large datasets {.unlisted}
+
+Time, Memory, Crash
+
+:::: {.columns}
+
+::: {.column width="40%"}
+![](img/r_screen_not_responding.png)
+:::
+::: {.column width="50%"}
+![](img/r_screen_allocation_error.jpeg)
+![](img/r_screen_session_aborted.png)
+:::
+
+::::
+
+## But what can we do ? {.unlisted}
+
+A not exhaustive list of what we may do:
+
+- **Optimize your R code** e.g. remove unnecessary loops, avoid data copy, loading unnecessary packages, etc, `Rcpp`
+- **Rely on (most efficient) R packages** e.g. `dplyr`, `data.table`, `arrow`
+- **Run code in parallel** e.g. `future` exploit hardware and distribute the work
+- **Upgrade session's available memory** e.g. change RStudio config, get hardware update, setup virtual machine with higher memory config
+- **Delegate treatment** e.g. `DBI`, `sparklyr`, `h2o` to perform operations with an engine more efficient than R
+- **Work on data samples** e.g. active learning
+- Breakdown tasks in your data science life cycle: **you cannot do everything in R**.
+
+

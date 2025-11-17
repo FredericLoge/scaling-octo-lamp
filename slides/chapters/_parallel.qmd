@@ -1,0 +1,49 @@
+# Parallel treatment
+
+## The `future` package
+
+If you look for resources around parallel programming, you'll inevitably found the following names: `snow`, `parallel`, `foreach` and `future`. Those are not the only ones but clearly the most popular.
+
+In all instances, the code looks somewhat (if not a little more complex) like the one we shall use from the `future` package:
+
+```{r}
+plan(multisession, workers=1) # of workers - to be changed
+system.time({
+  x <- foreach(i = 1:4) %dofuture% {
+    Sys.sleep(2)
+  }
+})
+```
+
+## All for one ?
+
+```{r}
+plan(multisession, workers=4)
+
+# choose a slow function
+slow_fct <- function(x){ Sys.sleep(1e-5) ; log(x) }
+
+# main vector
+x <- c(1:1e5)
+
+# iterate through the list
+system.time({
+  iter <- 1:length(x)
+  foreach(i=iter, .combine='c') %dofuture% {
+    slow_fct(x[i])
+  }
+})
+
+# iterate faster (especially in very large setting)
+system.time({
+  iter <- itertools::isplitIndices(n=length(x), chunks=4)
+  foreach(i=iter, .combine='c') %dofuture% {
+    slow_fct(x[i])
+  }
+})
+
+# baseline
+system.time({
+  sapply(X=1:length(x), FUN=function(i){ slow_fct(x[i]) })
+})
+```
