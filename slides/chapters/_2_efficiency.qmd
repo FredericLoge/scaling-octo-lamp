@@ -1,0 +1,194 @@
+# Writing efficient code
+
+## Best R practice recommendations
+
+-   Cleanliness & tidyness: avoid data copy, avoid garbage names throughout code, treat your RAM with kindness
+
+-   Comments are mandatory, even if variable names are explicit
+
+-   Work under RProject
+
+-   If you wish to build something that should last (used by others, robust etc), developing as an R Package is mandatory. Not suitable when doing tutorials and trying a million different things though :/
+
+## Timing
+
+When you are writing an R function, measuring it's execution time is good practice.
+
+```{r}
+# define a function
+foo <- function(){ return(sum(1:1e6)) }
+
+# measure execution of the function, once
+# user: actual CPU time for the process
+# system: any indirect operation due to the process: I/O of files, GC, memory allocation, ...
+# elapsed: total elapsed time
+system.time({ foo() })
+
+# repeat 50 times the function to get some statistics
+microbenchmark::microbenchmark({ foo() }, times = 50)
+```
+
+## Profiling code
+
+When your function (or general code) contains several instructions, profiling it allows you to see where exactly things go wrong. Here's a vanilla example:
+
+```{r}
+# note that in RStudio you can use the "Profile" menu identically
+profvis::profvis({
+  r <- c()
+  s <- 0
+  for(i in 1:1e6){
+    s <- s + i
+    r[i] <- i
+  }
+})
+```
+
+## Ex1: Moving Average
+
+::: {.callout-note title="Moving Average"}
+Input: x, numerical vector of length N
+
+Output: y, numerical vector of same length, where $y_i := ((x_i-1)+x_i+(x_i+1))/3$ if $i > 1$ and $i < N$, otherwise $y_i$ is NA.
+
+Propose some implementations of this function and use the timing functions seen previously to time yourselves.
+:::
+
+Solution in `exercise_1_moving_average.R`.
+
+. . .
+
+Some key learnings:
+
+-   Avoid dynamic memory allocation
+-   Avoid for loops
+
+## Why still create our own R functions ?
+
+If it exists in R and ruins decently well, then why rebuild it ?
+
+There are many cases were we might not find our pick:
+
+-   Data simulation purposes
+
+-   Statistical metrics
+
+-   Optimization functions
+
+...
+
+-   Because we don't know any other language 😭
+
+## Ex2: Dynamical System
+
+::: {.callout-note title="Simulation"}
+Consider the following dynamical system:
+
+-   $x_0$ is in $[0;1]$
+
+-   $\lambda$ is in $[0;4]$
+
+Then, for all $t \geq 1$:
+
+$x_t = \lambda * x_{t-1} * (1 - x_{t-1})$.
+
+Step 1. Code an R function which takes as input $(x_0, \lambda, n)$ and returns output $x_n$.
+
+Step 2. Run the function for a uniform grid of $(x_0, \lambda)$, the size of your choosing.
+:::
+
+Solution in `exercise_2_dynamical_system.R`
+
+. . .
+
+Key Learning: when you cannot remove the for loop, just code it in C++ 😉
+
+See more info on this [over here](https://en.wikipedia.org/wiki/Feigenbaum_constants).
+
+## Memory
+
+Aside from time benchmarks, scanning our environment for large objects can always be useful.
+
+-   `ls()` provides you the list of elements in your env
+
+-   `object.size(<the element>)` gives you its size (also `lobstr::obj_size(<the element)`)
+
+-   `rm()` removes an object from the env
+
+-   `gc()` runs garbage collection (which runs periodically anyway so no need usually)
+
+## Why do we need garbage collection ?
+
+-   RHS data is created and bounded to one or more names
+-   When a modification on RHS is requested, a copy is made.
+-   When an element is removed from the environment, it removes the name and its bind to the value, but the value in memory is still taken, until the garbage collector does its job.
+
+```{r}
+a <- c(1, 2, 3)
+b <- a # make copy
+
+print(lobstr::obj_addr(a)) 
+print(lobstr::obj_addr(b)) # wth ?? the same adress ?
+
+b[1] <- 0
+
+print(lobstr::obj_addr(a)) # value of a hasn't moved!
+print(lobstr::obj_addr(b)) # but value of b has
+```
+
+## Ex3: Order of Magnitude
+
+::: {.callout-note title="Order of Magnitude"}
+Generate random datasets:
+
+-   vary the data types: numerical, boolean, categorical
+
+-   vary the number of observations and columns
+
+For each dataset generated, compute the object size and make a nice visualization from it.
+:::
+
+Solution in `exercise_3_memory_costs.R`
+
+. . .
+
+Key Learnings:
+
+- Data storage of a variable in vectors is around 8MB/million
+
+- Can drop if you rely on integer coding (integer, factor, boolean)
+
+- R has specific internal mechanisms to handle efficiently memory when you copy variables
+
+## Ex4: Generate data under constraint
+
+::: {.callout-note title="Generate IDs"}
+Generate IDs with the following structure:
+
+- an ID consists of 10 digits (0-9) chosen at random, a special character (@, é, è, ê) and 5 letters (lowercase or uppercase no matter)
+
+- to be valid, the sum of the digits must be lower than 70 (rule 1)
+
+- to be valid, you cannot have the letter e in the ID and a 0 or 9 in the digits (rule 2)
+
+Your task is to find an efficient way to generate those IDs.
+:::
+
+Solution can be found in `exercise_4_generate_IDs.R`.
+
+. . .
+
+Key takeaway:
+
+- Vectorization is a great tool to write efficient code
+- Even with individual constraints and unavoidable loops, you can significantly increase computation speed by designing how you handle your computations
+
+## Exercises to go further
+
+-   Write an efficient ifelse block statement taking as input a numerical vector, with the conditions of your choice
+
+-   Investigate memory examples at a lower scale
+
+-   Rcpp implementation of optimization function e.g. Decision Tree
+
+- Implement exercise 4 using Rcpp

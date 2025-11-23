@@ -1,0 +1,47 @@
+# Parallel treatment
+
+## The `future` package
+
+If you look for resources around parallel programming, you'll inevitably found the following names: `snow`, `parallel`, `foreach` and `future`. Those are not the only ones but clearly the most popular.
+
+In all instances, the code looks somewhat (if not a little more complex) like the one we shall use from the `future` package:
+
+```{r}
+library(future)
+library(doFuture)
+
+plan(multisession, workers=1) # <- only one CPU working
+system.time({
+  x <- foreach(i = 1:4) %dofuture% {
+    Sys.sleep(2)
+  }
+}) # ~8 seconds elapsed
+
+plan(multisession, workers=4) # <- four CPU working!!
+system.time({
+  x <- foreach(i = 1:4) %dofuture% {
+    Sys.sleep(2)
+  }
+}) # ~2 seconds elapsed
+```
+
+## Ex5: When should we use parallel ?
+
+::: {.callout-note title="Parallel"}
+To verify that you can indeed rely on parallel programming, let's do the following experiment: define a function that is quite slow to run and compare the runtime when using several CPUs vs only one. Do the same thing with a fast function. What can you conclude ?
+:::
+
+Solution is in `exercise_5_parallel_experiments.R`.
+
+. . .
+
+Key takeaways:
+
+-   It is very easy (today) to require your code to be run asynchronously, which can speed up execution time tremendously (usually \*4 but sometimes more depending on your hardware setup)
+-   Note that if your code runs very fast, then the runtime might not improve and even worsen, as now there is communication to the workers which did not occur before
+
+## Going further
+
+In the [futureverse](https://future.futureverse.org/), you also have `future.apply` which proposes a futurized version of base R apply and `furrr` a futurized version of purrr. `foreach` is already pretty great, it's more a matter of personal choice. 
+
+I strongly encourage you to go back to your personal/professional projects and see where you could setup such parallel treatments. Sometimes it's much harder to see where to apply this, than to actually apply it!

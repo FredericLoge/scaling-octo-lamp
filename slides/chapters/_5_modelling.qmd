@@ -1,0 +1,47 @@
+# Statistical Analysis
+
+In this section, we will dive into two R packages allowing us to leverage high-end distributed frameworks for statistical analysis: `h2o` and `sparklyr`.
+
+## Platform `h2o`
+
+`h2o` is a distributed platform for ML. You can download and run it on your local machine, but you could also deploy it on a server. The backend code is in Java and therefore runs super fast, it is particularly interesting at scale. See the tutorial `tutorial_4_h2o.R` and check out how it works (broadly) over here:
+
+```{r}
+#| eval: false
+
+train_h2o_data <- as.h2o(...) # <- give some data
+
+h2o.init() # start h2o local JAVA server
+
+auto_ml <- h2o.automl(y=..., training_frame=train_h2o_data) # run auto ML
+
+best_model <- h2o.get_best_model(auto_ml) # extract best model
+
+prediction <- h2o.predict(best_model, test_h2o_data) # check out predictions
+```
+
+## Apache Spark
+
+Apache Spark allows for distributed ML and analytics on data. You can work on Onyxia or in a local spark server to run the code in `tutorial_5_sparklyr.R`.
+
+The process looks something along the following lines:
+
+```{r}
+#| eval: false
+
+library(sparklyr) # load lib
+
+sc <- spark_connect(master = "local") # connect to the server, local or not
+
+flights_tbl <- copy_to(sc, nycflights13::flights, "flights") # copy data
+
+model_delay <- flights_tbl %>%
+  na.omit(arr_delay, distance) %>%
+  ml_linear_regression(x=., formula=arr_delay~distance) # perform ML on the cluster
+```
+
+## Going further
+
+You are very much encouraged to apply those methods to your own projects and see what works and what doesn't. As we've seen in the past chapters, there is no one solution and no solution fits all.
+
+Something quite interesting would be to compare runtime when running usual R code versus those solutions. Happy exploration!

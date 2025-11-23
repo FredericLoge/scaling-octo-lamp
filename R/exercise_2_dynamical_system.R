@@ -1,4 +1,4 @@
-# DESCRIPTION ------------------------------------------------------------------
+# EXERCISE 
 #
 # To recreate a famous fractal, we have to generate data under the following pattern
 # - pick x0 in [0, 1]

@@ -1,4 +1,14 @@
-# Resources
+# Conclusion
+
+## Elements of conclusion
+
+Here's some key learnings:
+
+- Write efficient code: measure time and memory, rely on vectorization and base functions, code in C++
+
+- Use appropriate packages depending on the task at hand e.g. `arrow`
+
+- Remember: you don't need all the data for what you wish to accomplish. Don't be greedy for nothing!
 
 ## Resources {.smaller .unlisted}
 

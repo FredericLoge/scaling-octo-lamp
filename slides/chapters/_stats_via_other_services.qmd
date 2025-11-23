@@ -1,5 +1,0 @@
-# Analytics & analysis on cluster
-
-db connection
-h2o
-spark

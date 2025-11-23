@@ -1,0 +1,121 @@
+# Data Wrangling
+
+## Wrangling with `dplyr` and `tidyr`
+
+Before diving into a large dataset, let's consider a mid-one and focus on dplyr verbs, which, **spoiler alert**, are used a lot.
+
+`dplyr` and `tidyr` are two major packages of the [`tidyverse`](https://tidyverse.org/) that allow for easy data manipulation and statistics computations based on tabular data. If you are not familiar with those packages, please check out the tutorial `tutorial_1_dplyr_tidyr_dtplyr.R` for an easy introduction to the main verbs.
+
+*Note: if you prefer data.table manipulations, which are more efficient on large data but syntatically maybe harder to apprehend, the dtplyr package handles most conversions from dplyr verbs to data.table verbs. At such, it is a great way to ease into such transitions.*
+
+## How much data does one need ?
+
+Before diving into treatment of very large datasets, I would like to clearly convey the following message: **it is quite likely that you only need a quite "small" sample of data to work, clearly not the full database**.
+
+The rationale behind it is simply that data diversity is limited by the dimensions in which you work. So if you get more and more observations, at some point there is no more diversity in the additional data.
+
+Don't trust me ? Let's put it to the test!
+
+
+## Ex6: How much data does one need ?
+
+::: {.callout-note title="How much data does one need ?"}
+Consider the `nafld1` dataset from `survival` package, for which we have several features available for individuals which have or not a specific disease. Your task is to build a prediction model of the disease and evaluate how the model performs depending on the training set size. Please ensure that the test set is large enough to have accurate performance metrics.
+:::
+
+Solution is in `exercise_6_nafld1.R`.
+
+. . .
+
+In this particular case, about 1000 samples are sufficient to reach max performance. Note that, in practice, gradually increasing the sample size is good practice to avoid long runtimes.
+
+## Ex7: Reading large dataset
+
+For the following, please go [here](https://drive.google.com/file/d/1-c7PkjbuT9K502uKu34nYFQJQTpvVJsa/view?usp=drive_link) and download the file locally. 
+
+*Note: if this link is inactive some day, either pick any .csv file over 1Gb that you may have, or use the code in `generate_house_pricing_data.R`.*
+
+This dataset is 7.5Gb stored on disk. If you're a gambler, please try and read this in memory, see where that gets you 😈
+
+::: {.callout-note title="Read a sample of the data"}
+Let's try just importing a sample of the data, like 10000 rows. How would you go around doing it ?
+:::
+
+Solution is in `exercise_7_reading_large_dataset.R`
+
+. . . 
+
+Key takeaways:
+
+ - to import data in R: `data.table::fread` > `readr::read_csv` > `base::read.csv`, at least in big data setting
+ - you cannot read 7.5Gb of data in R's memory, so another way has to be taken!
+
+## Parquet, Apache Arrow and duckdb
+
+First off, we'll convert the .csv to the parquet format, which stores information in binary in a column format. That way, if some columns are needed, only those are loaded. Second, with Apache Arrow and duckdb, the data will not be loaded in memory, operations will be executed directly on the disk data.
+
+Aside from being able to read the data, this allows us to apply either `dplyr` verbs (using `arrow`) or SQL (using `duckdb`) for common data analytics.
+
+See `tutorial_2_parquet_arrow_duckdb.R` around those topics, or the next slides. A comprehensive benchmark of the solutions is available [here](https://duckdblabs.github.io/db-benchmark/).
+
+## Apache Arrow
+
+damn, can this get any easier ?
+
+```{r }
+#| eval: false
+
+# read parquet
+# <!> as_data_frame=FALSE ensures you don't read it in memory
+house_parquet <- read_parquet(file="data/local_parquet.parquet", as_data_frame = FALSE)
+
+# check out content
+house_parquet
+
+# build a query using common base/dplyr verbs
+req <- house_parquet %>% 
+  select(price, lat, long) %>% 
+  filter(lat > 0.5) %>%
+  summarise(mean(price))
+
+# check the request content - nothing is run yet
+print(req)
+
+# actually run the query **on the whole database** and locally collect the result
+req |> collect() 
+
+# note: if you need to just calculate a temporary result, and not collect it, use the `compute` method
+```
+
+## duckdb
+
+still using `dplyr` verbs !!
+
+```{r}
+#| eval: false
+
+# prepare DB connection
+con <- dbConnect(duckdb())
+
+# setup duck db connection 
+# you can also read directly the parquet without relying on the previous read_parquet
+house_parquet_tbl <- to_duckdb(house_parquet, con, "house_parquet_con")
+
+# same code as before 
+# -> this runs the query BUT the result is not stored
+req <- house_parquet_tbl %>% 
+  select(price, lat, long) %>% 
+  filter(lat > 0.5) %>%
+  summarise(mean(price))
+
+# run and export the value
+res <- req |> collect()
+```
+
+## Going further
+
+`duckdb` and `arrow` are popular solutions, but not the only ones. I encourage you to search for the best option in your respective working environments.
+
+Note that the data format is also of importance: we relied on parquet data since we had tabular data with a lot of records and a few columns. Another storing format is `avro`, where record a stored in binary format, per row, to facilitate this querying.
+
+If you want to look into working with databases in R (quite similar topics to what has been seen already), you have `tutorial_3_db.R`.

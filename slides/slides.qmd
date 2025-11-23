@@ -19,14 +19,14 @@ execute:
 editor: visual
 ---
 
-{{< include chapters/_problem_statement.qmd >}} 
+{{< include chapters/_1_problem_statement.qmd >}}
 
-{{< include chapters/_efficiency.qmd >}} 
+{{< include chapters/_2_efficiency.qmd >}}
 
-{{< include chapters/_parallel.qmd >}} 
+{{< include chapters/_3_parallel.qmd >}}
 
-{{< include chapters/_stats_in_R.qmd >}} 
+{{< include chapters/_4_data_wrangling.qmd >}}
 
-{{< include chapters/_stats_via_other_services.qmd >}} 
+{{< include chapters/_5_modelling.qmd >}}
 
-{{< include chapters/_resources.qmd >}}
+{{< include chapters/_6_resources.qmd >}}
